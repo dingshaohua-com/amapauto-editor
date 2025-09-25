@@ -4,3 +4,5 @@ out
 .DS_Store
 .eslintcache
 *.log*
+resources/jre-win
+apktool_2.12.1.jar
