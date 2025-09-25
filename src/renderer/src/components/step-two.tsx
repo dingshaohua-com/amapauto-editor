@@ -3,19 +3,20 @@ import { useAppCtx } from '@renderer/hooks/use-app-ctx'
 import { Combobox } from '@renderer/components/ui/combobox'
 import appList from '@renderer/lib/apps'
 
-
 export default function StepTwo(): React.JSX.Element {
   const { unPackPath } = useAppCtx()
   const [packageName, setPackageName] = useState('')
 
   const onClick = () => {
-    electron.ipcRenderer.invoke('build-apk', { unPackPath, packageName })
+    console.log(111, packageName);
+    
+    // electron.ipcRenderer.invoke('build-apk', { unPackPath, packageName })
   }
 
   return (
     <div className="h-full flex items-center justify-center">
       <div className="flex flex-col gap-4 ">
-        <div className='text-sm text-gray-400'>🌼解包路径在 {unPackPath}</div>
+        <div className="text-sm text-gray-400">🌼解包路径在 {unPackPath}</div>
 
         <div className="flex  gap-2 items-center">
           <label className="text-sm font-medium">设置包名：</label>
@@ -27,6 +28,17 @@ export default function StepTwo(): React.JSX.Element {
             searchPlaceholder="搜索或输入包名..."
             className="w-[300px] "
             emptyMessage="没有找到匹配的包名"
+            renderOption={(option) => (
+              <div className='flex items-center justify-between w-full gap-2 p-1'>
+                <div className='flex items-center gap-2'>
+                  <img src={`./imgs/pkgs/${option.label}.png`} alt="" className="w-6" />
+                  <div>
+                    <div className="font-medium">{option.label}</div>
+                    <div className="text-sm ">{option.value}</div>
+                  </div>
+                </div>
+              </div>
+            )}
           />
         </div>
 
