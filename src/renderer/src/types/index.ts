@@ -3,5 +3,26 @@ export interface MenuItemProps {
   title: string
   description: string
   onClick?: () => void
-  variant?: 'default' | 'primary' | 'secondary'
+  variant?:
+    | 'default'
+    | 'primary'
+    | 'secondary'
+    | 'danger'
+    | 'warning'
+    | 'info'
+    | 'success'
+    | 'purple'
+    | 'pink'
+    | 'indigo'
+    | 'teal'
+    | 'amber'
+    | 'lime'
+    | 'violet'
+    | 'rose'
+    | 'sky'
+    | 'emerald'
+    | 'slate'
+    | 'neutral'
+    | 'dark'
+    | 'light'
 }

@@ -67,18 +67,56 @@ export default function Fireworks({ show, onComplete, duration = 3000 }: Firewor
       // 启动烟花
       fireworksRef.current.start();
 
-      // 设置自动停止
-      const timer = setTimeout(() => {
-        if (fireworksRef.current) {
-          fireworksRef.current.stop();
-        }
-        if (onComplete) {
-          onComplete();
-        }
-      }, duration);
+      // 开始渐减过程 - 在70%的时间后开始逐渐减少烟花
+      const fadeStartTime = duration * 0.7;
+      const fadeTimer = setTimeout(() => {
+        // 逐渐减少烟花强度和频率
+        let currentIntensity = 40;
+        let currentParticles = 80;
+        let currentDelay = 30;
+        let currentOpacity = 0.8;
+
+        const reduceInterval = setInterval(() => {
+          if (fireworksRef.current && currentIntensity > 0) {
+            // 逐渐减少强度、粒子数量，增加延迟，降低透明度
+            currentIntensity = Math.max(0, currentIntensity - 3);
+            currentParticles = Math.max(10, currentParticles - 6);
+            currentDelay = Math.min(200, currentDelay + 25);
+            currentOpacity = Math.max(0.1, currentOpacity - 0.08);
+
+            // 使用 updateOptions 动态更新配置
+            fireworksRef.current.updateOptions({
+              opacity: currentOpacity,
+              particles: currentParticles,
+              intensity: currentIntensity,
+              explosion: Math.max(2, Math.floor(8 * (currentIntensity / 40))),
+              delay: {
+                min: currentDelay,
+                max: currentDelay + 40
+              },
+              brightness: {
+                min: Math.max(20, 50 * (currentIntensity / 40)),
+                max: Math.max(40, 80 * (currentIntensity / 40))
+              }
+            });
+
+            // 当强度降到很低时，使用 waitStop 平滑停止
+            if (currentIntensity <= 6) {
+              clearInterval(reduceInterval);
+
+              // 使用异步停止，更平滑
+              fireworksRef.current.waitStop(false).then(() => {
+                if (onComplete) {
+                  onComplete();
+                }
+              });
+            }
+          }
+        }, 500); // 每500ms减少一次强度，让变化更平滑
+      }, fadeStartTime);
 
       return () => {
-        clearTimeout(timer);
+        clearTimeout(fadeTimer);
         if (fireworksRef.current) {
           fireworksRef.current.stop();
           fireworksRef.current = null;

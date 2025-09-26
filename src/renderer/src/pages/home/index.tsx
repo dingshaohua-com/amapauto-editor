@@ -1,20 +1,9 @@
-import { getMenuItems } from './helper';
 import { useNavigate } from 'react-router';
 import { MenuItemProps } from '@renderer/types';
 import { Button } from '@renderer/components/ui/button';
+import { getMenuItems, getVariantStyles } from './helper';
 
 const MenuItem = ({ icon, title, description, onClick, variant = 'default' }: MenuItemProps) => {
-  const getVariantStyles = () => {
-    switch (variant) {
-      case 'primary':
-        return 'bg-gradient-to-br from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 border-0 shadow-lg';
-      case 'secondary':
-        return 'bg-gradient-to-br from-green-500 to-teal-600 text-white hover:from-green-600 hover:to-teal-700 border-0 shadow-lg';
-      default:
-        return 'bg-white hover:bg-gray-50 border border-gray-200 text-gray-900 hover:border-gray-300 shadow-sm hover:shadow-md';
-    }
-  };
-
   return (
     <Button
       variant="outline"
@@ -23,7 +12,7 @@ const MenuItem = ({ icon, title, description, onClick, variant = 'default' }: Me
         h-28 p-4 flex flex-col items-center justify-center gap-2
         transition-all duration-300 transform hover:scale-105 hover:shadow-xl
         rounded-xl group relative overflow-hidden
-        ${getVariantStyles()}
+        ${getVariantStyles(variant)}
       `}
       onClick={onClick}
     >

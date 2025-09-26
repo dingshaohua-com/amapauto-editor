@@ -14,8 +14,6 @@ export default function Unpack(): React.JSX.Element {
   const navigate = useNavigate();
 
   const onSelectFile = async () => {
-    setShowFireworks(true);
-    return false;
     try {
       setState({ type: 'idle' });
       const filePath = await electron.ipcRenderer.invoke('select-file');
@@ -70,16 +68,16 @@ export default function Unpack(): React.JSX.Element {
             <p className="text-sm text-green-800 font-mono break-all">📁 {unPackPath}</p>
           </div>
 
-          <div className="flex gap-3 flex-wrap">
-            <Button onClick={() => setState({ type: 'idle' })} size="sm" className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2">
+          <div className="flex gap-3 flex-wrap mt-10">
+            <Button onClick={() => setState({ type: 'idle' })} size="sm" className="cursor-pointer bg-red-600 hover:bg-red-700 text-white flex items-center gap-2">
               <RotateCcw className="w-4 h-4" />
               重新开始
             </Button>
-            <Button onClick={openUnpackFolder} size="sm" className="bg-yellow-600 hover:bg-yellow-700 text-white flex items-center gap-2">
+            <Button onClick={openUnpackFolder} size="sm" className="cursor-pointer bg-yellow-600 hover:bg-yellow-700 text-white flex items-center gap-2">
               <ExternalLink className="w-4 h-4" />
               打开解包目录
             </Button>
-            <Button onClick={() => navigate('/step-two')} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
+            <Button onClick={() => navigate('/step-two')} size="sm" className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
               {'下一步->修改包？'}
             </Button>
           </div>
@@ -99,7 +97,7 @@ export default function Unpack(): React.JSX.Element {
           <div className="max-w-4xl mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <Button variant="ghost" size="sm" onClick={handleBackToHome} className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+                <Button variant="ghost" size="sm" onClick={handleBackToHome} className="cursor-pointer flex items-center gap-2 text-gray-600 hover:text-gray-900">
                   <ArrowLeft className="w-4 h-4" />
                   返回主菜单
                 </Button>
@@ -143,7 +141,7 @@ export default function Unpack(): React.JSX.Element {
                     <img src={loadingImg} alt="Loading" className="w-32 h-32 object-contain" />
                     <div className="space-y-2">
                       <h3 className="text-xl font-semibold text-gray-900">正在解包中...</h3>
-                      <p className="text-gray-600">请稍候，正在解析 APK 文件结构</p>
+                      <p className="text-gray-600">请稍候，正在解包 APK，一般20秒左右！</p>
                     </div>
                   </div>
                 </div>
