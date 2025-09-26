@@ -2,7 +2,7 @@ import { useAppCtx } from '@renderer/hooks/use-app-ctx'
 import { useState } from 'react'
 import loadingImg from '../assets/imgs/loading.gif'
 
-export default function StepOne(): React.JSX.Element {
+export default function Unpack(): React.JSX.Element {
   const { path, setApp } = useAppCtx()
   const [loading, setLoading] = useState(false)
   const onSelectFile = async () => {
