@@ -14,6 +14,8 @@ export default function Unpack(): React.JSX.Element {
   const navigate = useNavigate();
 
   const onSelectFile = async () => {
+    setShowFireworks(true);
+    return false;
     try {
       setState({ type: 'idle' });
       const filePath = await electron.ipcRenderer.invoke('select-file');
@@ -89,7 +91,7 @@ export default function Unpack(): React.JSX.Element {
   return (
     <>
       {/* 烟花效果组件 - 最外层 */}
-      <Fireworks show={showFireworks} onComplete={() => setShowFireworks(false)} duration={3000} />
+      <Fireworks show={showFireworks} onComplete={() => setShowFireworks(false)} duration={5000} />
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         {/* 顶部导航栏 */}
