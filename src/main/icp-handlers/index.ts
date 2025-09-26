@@ -37,5 +37,15 @@ ipcMain.handle('build-apk', async (evnet, path: string) => {
   return unpackPath
 })
 
+ipcMain.handle('open-folder', async (event, folderPath: string) => {
+  try {
+    await shell.openPath(folderPath)
+    return true
+  } catch (error) {
+    console.error('Failed to open folder:', error)
+    return false
+  }
+})
+
 
 

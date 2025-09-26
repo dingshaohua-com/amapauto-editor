@@ -6,7 +6,11 @@ const router = createBrowserRouter([
   {
     path: '/',
     Component: Root,
-    children: [{ index: true, Component: lazy(() => import('@renderer/pages/home')) }]
+    children: [
+      { index: true, Component: lazy(() => import('@renderer/pages/home')) },
+      { path: '/unpack', Component: lazy(() => import('@renderer/pages/unpack')) },
+      { path: '/step-two', Component: lazy(() => import('@renderer/pages/step-two')) },
+    ]
   }
 ])
 

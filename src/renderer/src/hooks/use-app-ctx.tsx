@@ -10,9 +10,9 @@ export type AppCtxProps = {
 }
 
 export const defaultValue: AppCtxProps = {
-  step: 'two',
-  path:'xxx',
-  unPackPath:'xxxx',
+  step: 'one',
+  path:'',
+  unPackPath:'',
   setApp: () => {}
 }
 
