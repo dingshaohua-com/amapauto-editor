@@ -120,7 +120,7 @@ export function Combobox({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div className="relative">
+        <div className={cn("relative", className)}>
           <Button
             variant="outline"
             role="combobox"
