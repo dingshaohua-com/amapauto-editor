@@ -1,6 +1,7 @@
 import path from 'path';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
+import { spawn } from 'child_process';
 import { runJava } from '../utils/run-java';
 import apktoolJar from '../../../resources/apktool_2.9.3.jar?asset';
 import { app, shell, BrowserWindow, ipcMain, dialog, OpenDialogOptions } from 'electron';
@@ -192,5 +193,153 @@ ipcMain.handle('update-package-name', async (event, appPath: string, newPackageN
   } catch (error) {
     console.error('Failed to update package name:', error);
     return false;
+  }
+});
+
+
+// 执行命令的工具函数
+function runCommand(command: string, args: string[], options: any = {}): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const process = spawn(command, args, options);
+    let stdout = '';
+    let stderr = '';
+
+    process.stdout?.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    process.stderr?.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    process.on('close', (code) => {
+      if (code === 0) {
+        resolve(stdout);
+      } else {
+        reject(new Error(`Command failed with code ${code}: ${stderr}`));
+      }
+    });
+
+    process.on('error', (error) => {
+      reject(error);
+    });
+  });
+}
+
+// 重签APK
+ipcMain.handle('sign-apk', async (event, filePath: string, serialType: string) => {
+  try {
+    console.log('开始签名APK:', filePath, '车型:', serialType);
+
+    const fileDir = path.dirname(filePath);
+    const fileName = path.basename(filePath);
+    const currentTime = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
+    const tempDir = path.join(fileDir, currentTime);
+    const newApkFilePath = path.join(fileDir, `sign-${fileName}`);
+
+    // 创建临时目录
+    await fs.mkdir(tempDir, { recursive: true });
+
+    // 根据车型确定序列号
+    let serial: string;
+    switch (serialType) {
+      case 'wutong':
+        serial = '0xddb66eefd98476f3';
+        break;
+      case 'feiyu':
+        serial = '0xd42599c0446bdafc';
+        break;
+      case 'g318':
+        serial = '0xb3998086d056cffa';
+        break;
+      case 'a07':
+        serial = '7b06e022411a04e1e0746ba461af8017ea34fa08';
+        break;
+      default:
+        throw new Error(`不支持的车型: ${serialType}`);
+    }
+
+    console.log('使用序列号:', serial);
+
+    // 生成私钥
+    console.log('生成私钥: private.key');
+    await runCommand('openssl', [
+      'genrsa',
+      '-out', path.join(tempDir, 'private.key'),
+      '2048'
+    ]);
+
+    // 生成CSR和证书
+    console.log('生成CSR和证书');
+    await runCommand('openssl', [
+      'req', '-new',
+      '-key', path.join(tempDir, 'private.key'),
+      '-out', path.join(tempDir, 'csr.csr'),
+      '-subj', '/emailAddress=auto_release@auto-pai.com/CN=SCM/OU=Software/O=WTCL/L=HaiDian/ST=Beijing/C=CN'
+    ]);
+
+    await runCommand('openssl', [
+      'x509', '-req',
+      '-in', path.join(tempDir, 'csr.csr'),
+      '-signkey', path.join(tempDir, 'private.key'),
+      '-out', path.join(tempDir, 'certificate.crt'),
+      '-days', '18250',
+      '-set_serial', serial
+    ]);
+
+    // 生成P12证书
+    console.log('生成P12证书');
+    await runCommand('openssl', [
+      'pkcs12', '-export',
+      '-in', path.join(tempDir, 'certificate.crt'),
+      '-inkey', path.join(tempDir, 'private.key'),
+      '-out', path.join(tempDir, 'cert.p12'),
+      '-name', 'cert',
+      '-passout', 'pass:123456789'
+    ]);
+
+    // 生成JKS密钥库
+    console.log('生成JKS密钥库');
+    await runCommand('keytool', [
+      '-importkeystore',
+      '-srckeystore', path.join(tempDir, 'cert.p12'),
+      '-srcstorepass', '123456789',
+      '-srcstoretype', 'PKCS12',
+      '-destkeystore', path.join(tempDir, 'cert.jks'),
+      '-deststoretype', 'JKS',
+      '-deststorepass', '123456789',
+      '-noprompt'
+    ]);
+
+    // 使用apksigner签名
+    console.log('开始签名APK');
+    await runCommand('apksigner', [
+      'sign',
+      '--ks', path.join(tempDir, 'cert.jks'),
+      '--ks-key-alias', 'cert',
+      '--ks-pass', 'pass:123456789',
+      '--v1-signing-enabled', 'true',
+      '--v2-signing-enabled', 'true',
+      '--v3-signing-enabled', 'false',
+      '--out', newApkFilePath,
+      filePath
+    ]);
+
+    // 清理临时文件
+    console.log('清理临时文件');
+    await fs.rm(tempDir, { recursive: true, force: true });
+
+    // 删除.idsig文件（如果存在）
+    const idsigPath = `${newApkFilePath}.idsig`;
+    if (existsSync(idsigPath)) {
+      await fs.unlink(idsigPath);
+    }
+
+    console.log('签名完成:', newApkFilePath);
+    return newApkFilePath;
+
+  } catch (error) {
+    console.error('签名失败:', error);
+    throw error;
   }
 });
