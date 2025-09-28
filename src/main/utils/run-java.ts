@@ -1,12 +1,12 @@
 // src/flexible-runner.ts
 
-import path from 'path'
-import { spawn, ChildProcess } from 'child_process'
-import { fileURLToPath } from 'url'
-import javaExe from '../../../resources/jre-win/bin/java.exe?asset'
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { spawn, ChildProcess } from 'child_process';
+import javaExe from '../../../resources/jre/bin/java?asset'; // win下应改为java.exe
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * 通用地运行一个使用捆绑JRE的Java命令。
@@ -21,21 +21,21 @@ export function runJava(args: string[] = []): Promise<void> {
     // const javaPath: string = path.resolve(baseDir, 'jre-win', 'bin', 'java.exe')
     const javaPath = javaExe;
 
-    console.log(`[Node.js] ready commd:`)
-    console.log(`  -> Java path: ${javaPath}`)
-    console.log(`  -> params: ${args.join(' ')}`)
+    console.log(`[Node.js] ready commd:`);
+    console.log(`  -> Java path: ${javaPath}`);
+    console.log(`  -> params: ${args.join(' ')}`);
 
-    const javaProcess: ChildProcess = spawn(javaPath, args) // 直接使用传入的args
+    const javaProcess: ChildProcess = spawn(javaPath, args); // 直接使用传入的args
 
     // ... (后面的事件监听代码和之前完全一样) ...
-    javaProcess.stdout?.on('data', (data) => console.log(`[Java]: ${data.toString().trim()}`))
-    javaProcess.stderr?.on('data', (data) => console.error(`[Java ERR]: ${data.toString().trim()}`))
+    javaProcess.stdout?.on('data', (data) => console.log(`[Java]: ${data.toString().trim()}`));
+    javaProcess.stderr?.on('data', (data) => console.error(`[Java ERR]: ${data.toString().trim()}`));
     javaProcess.on('close', (code) => {
-      if (code === 0) resolve()
-      else reject(new Error(`Java process exited with code ${code}`))
-    })
-    javaProcess.on('error', (err) => reject(err))
-  })
+      if (code === 0) resolve();
+      else reject(new Error(`Java process exited with code ${code}`));
+    });
+    javaProcess.on('error', (err) => reject(err));
+  });
 }
 
 // // ------ 如何使用这个灵活的函数 ------

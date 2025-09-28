@@ -3,7 +3,8 @@ import fs from 'fs/promises';
 import { existsSync } from 'fs';
 import { spawn } from 'child_process';
 import { runJava } from '../utils/run-java';
-import apktoolJar from '../../../resources/apktool_2.9.3.jar?asset';
+import apktoolJar from '../../../resources/apktool.jar?asset';
+import aapt2 from '../../../resources/build-tools/34.0.0/aapt2?asset';
 import { app, shell, BrowserWindow, ipcMain, dialog, OpenDialogOptions } from 'electron';
 
 const tmpDir = app.getPath('temp');
@@ -27,6 +28,13 @@ ipcMain.handle('select-file', async () => {
   }
 });
 
+// 获取系统framework.apk版本号
+// ~/Library/Android/sdk/build-tools/<version>/aapt2 dump badging /Users/admin/Library/apktool/framework/1.apk
+ipcMain.handle('getFrameInfo', async () => {
+ // 
+});
+
+
 // 解包APK
 ipcMain.handle('unpack-apk', async (evnet, filePath: string) => {
   // 使用path.parse解析路径
@@ -39,7 +47,7 @@ ipcMain.handle('unpack-apk', async (evnet, filePath: string) => {
 
   console.log(1122, unpackPath);
   
-  const params = ['-Dfile.encoding=UTF-8', '-jar', apktoolJar, 'd', filePath, '-f', '-o', unpackPath];
+  const params = ['-Dfile.encoding=UTF-8', '-jar', apktoolJar, 'd', filePath, '-f', '-o', unpackPath, ];
   const res = await runJava(params);
   return unpackPath;
 });
