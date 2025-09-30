@@ -104,7 +104,7 @@ export default function EditPack(): React.JSX.Element {
   };
 
   const buildApk = async()=>{
-     await electron.ipcRenderer.invoke('build-apk', appInfo.path);
+     await electron.ipcRenderer.invoke('build-apk', appInfo?.path);
      console.log('打包完成');
      
   }

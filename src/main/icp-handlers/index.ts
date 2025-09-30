@@ -3,8 +3,10 @@ import fs from 'fs/promises';
 import { existsSync } from 'fs';
 import { spawn } from 'child_process';
 import { runJava } from '../utils/run-java';
+import repairGaode from './repair-res/gaode';
 import apktoolJar from '../../../resources/apktool.jar?asset';
-import aapt2 from '../../../resources/build-tools/34.0.0/aapt2?asset';
+import oneCertJks from '../../../resources/jks/one-cert.jks?asset';
+import apksigner from '../../../resources/build-tools/34.0.0/apksigner.bat?asset';
 import { app, shell, BrowserWindow, ipcMain, dialog, OpenDialogOptions } from 'electron';
 
 const tmpDir = app.getPath('temp');
@@ -28,13 +30,6 @@ ipcMain.handle('select-file', async () => {
   }
 });
 
-// 获取系统framework.apk版本号
-// ~/Library/Android/sdk/build-tools/<version>/aapt2 dump badging /Users/admin/Library/apktool/framework/1.apk
-ipcMain.handle('getFrameInfo', async () => {
- // 
-});
-
-
 // 解包APK
 ipcMain.handle('unpack-apk', async (evnet, filePath: string) => {
   // 使用path.parse解析路径
@@ -44,21 +39,15 @@ ipcMain.handle('unpack-apk', async (evnet, filePath: string) => {
   // 文件路径（目录）
   const directory = pathObj.dir;
   const unpackPath = path.join(directory, fileNameWithoutExt);
-
-  console.log(1122, unpackPath);
-  
-  const params = ['-Dfile.encoding=UTF-8', '-jar', apktoolJar, 'd', filePath, '-f', '-o', unpackPath, ];
+  const params = ['-Dfile.encoding=UTF-8', '-jar', apktoolJar, 'd', '-k', filePath, '-f', '-o', unpackPath];
   const res = await runJava(params);
+  repairGaode(unpackPath);
   return unpackPath;
 });
 
 // 打包APK
 ipcMain.handle('build-apk', async (evnet, path: string) => {
-  console.log(path);
   const params = ['-Dfile.encoding=UTF-8', '-jar', apktoolJar, 'b', path];
-
-  console.log(123, params);
-
   const res = await runJava(params);
   return unpackPath;
 });
@@ -204,7 +193,6 @@ ipcMain.handle('update-package-name', async (event, appPath: string, newPackageN
   }
 });
 
-
 // 执行命令的工具函数
 function runCommand(command: string, args: string[], options: any = {}): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -237,115 +225,19 @@ function runCommand(command: string, args: string[], options: any = {}): Promise
 // 重签APK
 ipcMain.handle('sign-apk', async (event, filePath: string, serialType: string) => {
   try {
-    console.log('开始签名APK:', filePath, '车型:', serialType);
-
-    const fileDir = path.dirname(filePath);
-    const fileName = path.basename(filePath);
-    const currentTime = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
-    const tempDir = path.join(fileDir, currentTime);
-    const newApkFilePath = path.join(fileDir, `sign-${fileName}`);
-
-    // 创建临时目录
-    await fs.mkdir(tempDir, { recursive: true });
-
-    // 根据车型确定序列号
-    let serial: string;
-    switch (serialType) {
-      case 'wutong':
-        serial = '0xddb66eefd98476f3';
-        break;
-      case 'feiyu':
-        serial = '0xd42599c0446bdafc';
-        break;
-      case 'g318':
-        serial = '0xb3998086d056cffa';
-        break;
-      case 'a07':
-        serial = '7b06e022411a04e1e0746ba461af8017ea34fa08';
-        break;
-      default:
-        throw new Error(`不支持的车型: ${serialType}`);
-    }
-
-    console.log('使用序列号:', serial);
-
-    // 生成私钥
-    console.log('生成私钥: private.key');
-    await runCommand('openssl', [
-      'genrsa',
-      '-out', path.join(tempDir, 'private.key'),
-      '2048'
-    ]);
-
-    // 生成CSR和证书
-    console.log('生成CSR和证书');
-    await runCommand('openssl', [
-      'req', '-new',
-      '-key', path.join(tempDir, 'private.key'),
-      '-out', path.join(tempDir, 'csr.csr'),
-      '-subj', '/emailAddress=auto_release@auto-pai.com/CN=SCM/OU=Software/O=WTCL/L=HaiDian/ST=Beijing/C=CN'
-    ]);
-
-    await runCommand('openssl', [
-      'x509', '-req',
-      '-in', path.join(tempDir, 'csr.csr'),
-      '-signkey', path.join(tempDir, 'private.key'),
-      '-out', path.join(tempDir, 'certificate.crt'),
-      '-days', '18250',
-      '-set_serial', serial
-    ]);
-
-    // 生成P12证书
-    console.log('生成P12证书');
-    await runCommand('openssl', [
-      'pkcs12', '-export',
-      '-in', path.join(tempDir, 'certificate.crt'),
-      '-inkey', path.join(tempDir, 'private.key'),
-      '-out', path.join(tempDir, 'cert.p12'),
-      '-name', 'cert',
-      '-passout', 'pass:123456789'
-    ]);
-
-    // 生成JKS密钥库
-    console.log('生成JKS密钥库');
-    await runCommand('keytool', [
-      '-importkeystore',
-      '-srckeystore', path.join(tempDir, 'cert.p12'),
-      '-srcstorepass', '123456789',
-      '-srcstoretype', 'PKCS12',
-      '-destkeystore', path.join(tempDir, 'cert.jks'),
-      '-deststoretype', 'JKS',
-      '-deststorepass', '123456789',
-      '-noprompt'
-    ]);
-
+    // apksigner sign --ks $tempDir/cert.jks --ks-key-alias "cert" --ks-pass pass:123456789 --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled false --out $newApkFilePath $filePath
     // 使用apksigner签名
+    // 使用path.parse解析路径
+    const pathObj = path.parse(filePath);
+    // 文件名（不含后缀）
+    const fileNameWithoutExt = pathObj.name;
+    // 文件路径（目录）
+    const directory = pathObj.dir;
+    const unpackPath = path.join(directory, fileNameWithoutExt);
+
     console.log('开始签名APK');
-    await runCommand('apksigner', [
-      'sign',
-      '--ks', path.join(tempDir, 'cert.jks'),
-      '--ks-key-alias', 'cert',
-      '--ks-pass', 'pass:123456789',
-      '--v1-signing-enabled', 'true',
-      '--v2-signing-enabled', 'true',
-      '--v3-signing-enabled', 'false',
-      '--out', newApkFilePath,
-      filePath
-    ]);
-
-    // 清理临时文件
-    console.log('清理临时文件');
-    await fs.rm(tempDir, { recursive: true, force: true });
-
-    // 删除.idsig文件（如果存在）
-    const idsigPath = `${newApkFilePath}.idsig`;
-    if (existsSync(idsigPath)) {
-      await fs.unlink(idsigPath);
-    }
-
-    console.log('签名完成:', newApkFilePath);
-    return newApkFilePath;
-
+    await runCommand(apksigner, ['sign', '--ks', oneCertJks, '--ks-key-alias', 'cert', '--ks-pass', 'pass:123456789', '--v1-signing-enabled', 'true', '--v2-signing-enabled', 'true', '--v3-signing-enabled', 'false', '--out', unpackPath, `${fileNameWithoutExt}-singined.apk`]);
+    return '签名完成';
   } catch (error) {
     console.error('签名失败:', error);
     throw error;

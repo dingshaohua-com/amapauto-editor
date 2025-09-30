@@ -3,7 +3,7 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawn, ChildProcess } from 'child_process';
-import javaExe from '../../../resources/jre/bin/java?asset'; // win下应改为java.exe
+import javaExe from '../../../resources/jre/bin/java.exe?asset'; // win下应改为java.exe
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,9 +21,9 @@ export function runJava(args: string[] = []): Promise<void> {
     // const javaPath: string = path.resolve(baseDir, 'jre-win', 'bin', 'java.exe')
     const javaPath = javaExe;
 
-    console.log(`[Node.js] ready commd:`);
-    console.log(`  -> Java path: ${javaPath}`);
-    console.log(`  -> params: ${args.join(' ')}`);
+    // console.log(`[Node.js] ready commd:`);
+    // console.log(`  -> Java path: ${javaPath}`);
+    // console.log(`  -> params: ${args.join(' ')}`);
 
     const javaProcess: ChildProcess = spawn(javaPath, args); // 直接使用传入的args
 
