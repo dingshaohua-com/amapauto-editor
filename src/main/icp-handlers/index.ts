@@ -201,11 +201,11 @@ function runCommand(command: string, args: string[], options: any = {}): Promise
     let stderr = '';
 
     process.stdout?.on('data', (data) => {
-      stdout += data.toString();
+      stdout += data.toString('utf8');
     });
 
     process.stderr?.on('data', (data) => {
-      stderr += data.toString();
+      stderr += data.toString('utf8');
     });
 
     process.on('close', (code) => {
@@ -233,11 +233,31 @@ ipcMain.handle('sign-apk', async (event, filePath: string, serialType: string) =
     const fileNameWithoutExt = pathObj.name;
     // 文件路径（目录）
     const directory = pathObj.dir;
-    const unpackPath = path.join(directory, fileNameWithoutExt);
 
-    console.log('开始签名APK');
-    await runCommand(apksigner, ['sign', '--ks', oneCertJks, '--ks-key-alias', 'cert', '--ks-pass', 'pass:123456789', '--v1-signing-enabled', 'true', '--v2-signing-enabled', 'true', '--v3-signing-enabled', 'false', '--out', unpackPath, `${fileNameWithoutExt}-singined.apk`]);
-    return '签名完成';
+    // 构建输出文件的完整路径
+    const outputApkPath = path.join(directory, `${fileNameWithoutExt}-signed.apk`);
+
+    console.log('start sign APK', apksigner);
+    console.log('Input APK:', filePath);
+    console.log('Output APK:', outputApkPath);
+
+    await runCommand(
+      apksigner,
+      [
+        'sign',
+        '--ks', oneCertJks,
+        '--ks-key-alias', 'cert',
+        '--ks-pass', 'pass:123456789',
+        '--v1-signing-enabled', 'true',
+        '--v2-signing-enabled', 'true',
+        '--v3-signing-enabled', 'false',
+        '--out', outputApkPath,
+        filePath  // 输入的APK文件
+      ],
+      { shell: true }
+    );
+
+    return outputApkPath;
   } catch (error) {
     console.error('签名失败:', error);
     throw error;
