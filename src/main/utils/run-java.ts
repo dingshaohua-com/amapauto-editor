@@ -1,12 +1,12 @@
 // src/flexible-runner.ts
-
-import path from 'path';
-import { fileURLToPath } from 'url';
+// import path from 'path';
+// import { fileURLToPath } from 'url';
+import getSomeFile from './some-file';
 import { spawn, ChildProcess } from 'child_process';
-import javaExe from '../../../resources/jre/bin/java.exe?asset'; // win下应改为java.exe
+const javaExe = getSomeFile('java');
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 /**
  * 通用地运行一个使用捆绑JRE的Java命令。

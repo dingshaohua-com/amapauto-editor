@@ -32,6 +32,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "import-sync": "^2.2.3",
     "lucide-react": "^0.544.0",
     "react-router": "^7.9.2",
     "tailwind-merge": "^3.3.1",
