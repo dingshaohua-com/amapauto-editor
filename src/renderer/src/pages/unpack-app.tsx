@@ -91,7 +91,7 @@ export default function Unpack(): React.JSX.Element {
       {/* 烟花效果组件 - 最外层 */}
       <Fireworks show={showFireworks} onComplete={() => setShowFireworks(false)} duration={5000} />
 
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="h-screen ">
         {/* 顶部导航栏 */}
         <div className="bg-white shadow-sm border-b border-gray-200">
           <div className="max-w-4xl mx-auto px-6 py-4">
@@ -116,7 +116,7 @@ export default function Unpack(): React.JSX.Element {
           <div className="w-full max-w-2xl">
             {match(state)
               .with({ type: 'idle' }, () => (
-                <div className="bg-white rounded-2xl shadow-xl p-8">
+                <>
                   {/* 选择文件按钮 */}
                   <div className="text-center">
                     <Button onClick={onSelectFile} size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 text-base font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
@@ -129,24 +129,24 @@ export default function Unpack(): React.JSX.Element {
                   <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <h4 className="text-sm font-medium text-blue-900 mb-2">温馨提示：</h4>
                     <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• 支持标准的 .apk 文件格式</li>
-                      <li>• 解包过程可能需要几分钟时间，请耐心等待</li>
+                      <li>• 支持标准的 apk 文件</li>
+                      <li>• 解包需要点时间，请耐心等待</li>
                     </ul>
                   </div>
-                </div>
+                </>
               ))
               .with({ type: 'loading' }, () => (
-                <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
-                  <div className="flex flex-col items-center gap-6">
+                <>
+                  <div className="flex flex-col items-center">
                     <img src={loadingImg} alt="Loading" className="w-32 h-32 object-contain" />
-                    <div className="space-y-2">
+                    <div>
                       <h3 className="text-xl font-semibold text-gray-900">正在解包中...</h3>
-                      <p className="text-gray-600">请稍候，正在解包 APK，一般20秒左右！</p>
+                      <p className="text-gray-400 text-sm">请稍候，正在解包 APK，一般20秒左右！</p>
                     </div>
                   </div>
-                </div>
+                </>
               ))
-              .with({ type: 'success' }, ({ unPackPath }) => <div className="bg-white rounded-2xl shadow-xl p-8">{renderSuccessState(unPackPath)}</div>)
+              .with({ type: 'success' }, ({ unPackPath }) => renderSuccessState(unPackPath))
               .with({ type: 'error' }, ({ message }) => (
                 <div className="bg-white rounded-2xl shadow-xl p-8">
                   <div className="mb-6 p-4 bg-red-50 rounded-lg border border-red-200">

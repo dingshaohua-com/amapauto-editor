@@ -8,7 +8,7 @@ export const getMenuItems = (navigate) => {
       description: '解析 APK 文件结构',
       variant: 'primary' as const,
       onClick: () => {
-        navigate('/unpack');
+        navigate('/unpack-app');
       },
     },
     {
@@ -17,7 +17,7 @@ export const getMenuItems = (navigate) => {
       description: '修改APP信息',
       variant: 'pink' as const,
       onClick: () => {
-        navigate('/edit-pack');
+        navigate('/edit-app');
       },
     },
     {
@@ -25,7 +25,7 @@ export const getMenuItems = (navigate) => {
       title: '签名工具',
       description: '为 APK 添加数字签名',
       onClick: () => {
-        navigate('/re-sign');
+        navigate('/sign-app');
       },
     },
     {

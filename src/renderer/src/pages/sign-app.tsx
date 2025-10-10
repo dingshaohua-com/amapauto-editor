@@ -4,22 +4,17 @@ import { useNavigate } from 'react-router';
 import loadingImg from '../assets/imgs/loading.gif';
 import Fireworks from '@renderer/components/fireworks';
 import { Button } from '@renderer/components/ui/button';
-import { ArrowLeft, FileCheck, CheckCircle, AlertCircle, ExternalLink, RotateCcw, Folder } from 'lucide-react';
 import { Combobox } from '@renderer/components/ui/combobox';
+import { ArrowLeft, FileCheck, CheckCircle, AlertCircle, ExternalLink, RotateCcw, Folder } from 'lucide-react';
 
-type SignState =
-  | { type: 'idle' }
-  | { type: 'file-selected'; filePath: string }
-  | { type: 'loading' }
-  | { type: 'success'; signedApkPath: string }
-  | { type: 'error'; message: string };
+type SignState = { type: 'idle' } | { type: 'file-selected'; filePath: string } | { type: 'loading' } | { type: 'success'; signedApkPath: string } | { type: 'error'; message: string };
 
 // 车型选项
 const carTypeOptions = [
   { label: '梧桐系', value: 'wutong' },
   { label: '飞鱼系', value: 'feiyu' },
   { label: 'G318', value: 'g318' },
-  { label: 'A07', value: 'a07' }
+  { label: 'A07', value: 'a07' },
 ];
 
 export default function ReSign(): React.JSX.Element {
@@ -179,15 +174,7 @@ export default function ReSign(): React.JSX.Element {
                   {/* 车型选择 */}
                   <div className="mb-6">
                     <label className="text-sm font-medium text-gray-700 mb-3 block">选择车型：</label>
-                    <Combobox
-                      options={carTypeOptions}
-                      value={carType}
-                      onValueChange={setCarType}
-                      placeholder="请选择车型..."
-                      searchPlaceholder="搜索车型..."
-                      className="w-full"
-                      emptyMessage="没有找到匹配的车型"
-                    />
+                    <Combobox options={carTypeOptions} value={carType} onValueChange={setCarType} placeholder="请选择车型..." searchPlaceholder="搜索车型..." className="w-full" emptyMessage="没有找到匹配的车型" />
                   </div>
 
                   {/* 操作按钮 */}
@@ -196,11 +183,7 @@ export default function ReSign(): React.JSX.Element {
                       <RotateCcw className="w-4 h-4 mr-2" />
                       重新选择
                     </Button>
-                    <Button
-                      onClick={onStartSign}
-                      disabled={!carType}
-                      className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
-                    >
+                    <Button onClick={onStartSign} disabled={!carType} className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white">
                       <FileCheck className="w-4 h-4 mr-2" />
                       开始签名
                     </Button>

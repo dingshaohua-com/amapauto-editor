@@ -8,9 +8,9 @@ const router = createBrowserRouter([
     Component: Root,
     children: [
       { index: true, Component: lazy(() => import('@renderer/pages/home')) },
-      { path: '/unpack', Component: lazy(() => import('@renderer/pages/unpack')) },
-      { path: '/edit-pack', Component: lazy(() => import('@renderer/pages/edit-pack')) },
-      { path: '/re-sign', Component: lazy(() => import('@renderer/pages/re-sign')) },
+      { path: '/unpack-app', Component: lazy(() => import('@renderer/pages/unpack-app')) },
+      { path: '/edit-app', Component: lazy(() => import('@renderer/pages/edit-app')) },
+      { path: '/sign-app', Component: lazy(() => import('@renderer/pages/sign-app')) },
     ]
   }
 ])
