@@ -1,95 +1,98 @@
 import path from 'path';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
+import { ipcMain } from 'electron';
 import { spawn } from 'child_process';
-import { app, ipcMain } from 'electron';
 import { runJava } from '../utils/run-java';
-import repairGaode from './repair-res/gaode';
 import getSomeFile from '../utils/some-file.js';
+import parseManifest from '../utils/parse-manifest';
+import repairAutoAmap from '../utils/repair-res/auto-amap';
 import apktoolJar from '../../../resources/apktool.jar?asset';
 import oneCertJks from '../../../resources/jks/one-cert.jks?asset';
 
 const apksigner = getSomeFile('apksigner');
-const tmpDir = app.getPath('temp');
-const unpackPath = path.join(tmpDir, 'gaode');
 
 // 解包APK
 ipcMain.handle('unpack-apk', async (_, filePath: string) => {
   // 使用path.parse解析路径，从而获取文件名（不含后缀）
   const { name: fileName, dir: fileDir } = path.parse(filePath);
-  // 文件路径（目录）
-  const unpackPath = path.join(fileDir, fileName);
+  const unpackPath = path.join(fileDir, fileName); // 文件路径（目录）
   const params = ['-Dfile.encoding=UTF-8', '-jar', apktoolJar, 'd', '-k', filePath, '-f', '-o', unpackPath];
-  const res = await runJava(params);
-  repairGaode(unpackPath);
+  await runJava(params);
+  repairAutoAmap(unpackPath);
   return unpackPath;
 });
 
 // 打包APK
-ipcMain.handle('build-apk', async (evnet, path: string) => {
+ipcMain.handle('build-apk', async (_, path: string) => {
   const params = ['-Dfile.encoding=UTF-8', '-jar', apktoolJar, 'b', path];
   const res = await runJava(params);
-  return unpackPath;
+  return res;
 });
 
 // 读取应用信息（从AndroidManifest.xml和其他文件）
-ipcMain.handle('read-app-info', async (event, appPath: string) => {
-  try {
-    const manifestPath = path.join(appPath, 'AndroidManifest.xml');
-    const stringsPath = path.join(appPath, 'res', 'values', 'strings.xml');
+ipcMain.handle('read-app-info', async (_, appPath: string) => {
+  const manifestPath = path.join(appPath, 'AndroidManifest.xml');
+  const manifest = await parseManifest(manifestPath);
+  console.log(manifestPath);
+  return manifest;
 
-    const appInfo: any = {
-      path: appPath,
-      name: '',
-      packageName: '',
-      icon: null,
-    };
+  // try {
+  //   const manifestPath = path.join(appPath, 'AndroidManifest.xml');
+  //   const stringsPath = path.join(appPath, 'res', 'values', 'strings.xml');
 
-    // 读取AndroidManifest.xml
-    if (existsSync(manifestPath)) {
-      const manifestContent = await fs.readFile(manifestPath, 'utf-8');
+  //   const appInfo: any = {
+  //     path: appPath,
+  //     name: '',
+  //     packageName: '',
+  //     icon: null,
+  //   };
 
-      // 提取包名
-      const packageMatch = manifestContent.match(/package="([^"]+)"/);
-      if (packageMatch) {
-        appInfo.packageName = packageMatch[1];
-      }
+  //   // 读取AndroidManifest.xml
+  //   if (existsSync(manifestPath)) {
+  //     const manifestContent = await fs.readFile(manifestPath, 'utf-8');
 
-      // 提取应用图标
-      const iconMatch = manifestContent.match(/android:icon="([^"]+)"/);
-      if (iconMatch) {
-        const iconPath = iconMatch[1].replace('@drawable/', '').replace('@mipmap/', '');
-        // 查找图标文件
-        const possibleIconPaths = [path.join(appPath, 'res', 'drawable', `${iconPath}.png`), path.join(appPath, 'res', 'drawable-hdpi', `${iconPath}.png`), path.join(appPath, 'res', 'drawable-mdpi', `${iconPath}.png`), path.join(appPath, 'res', 'drawable-xhdpi', `${iconPath}.png`), path.join(appPath, 'res', 'drawable-xxhdpi', `${iconPath}.png`), path.join(appPath, 'res', 'mipmap-hdpi', `${iconPath}.png`), path.join(appPath, 'res', 'mipmap-mdpi', `${iconPath}.png`), path.join(appPath, 'res', 'mipmap-xhdpi', `${iconPath}.png`), path.join(appPath, 'res', 'mipmap-xxhdpi', `${iconPath}.png`)];
+  //     // 提取包名
+  //     const packageMatch = manifestContent.match(/package="([^"]+)"/);
+  //     if (packageMatch) {
+  //       appInfo.packageName = packageMatch[1];
+  //     }
 
-        for (const iconFilePath of possibleIconPaths) {
-          if (existsSync(iconFilePath)) {
-            appInfo.icon = iconFilePath;
-            break;
-          }
-        }
-      }
-    }
+  //     // 提取应用图标
+  //     const iconMatch = manifestContent.match(/android:icon="([^"]+)"/);
+  //     if (iconMatch) {
+  //       const iconPath = iconMatch[1].replace('@drawable/', '').replace('@mipmap/', '');
+  //       // 查找图标文件
+  //       const possibleIconPaths = [path.join(appPath, 'res', 'drawable', `${iconPath}.png`), path.join(appPath, 'res', 'drawable-hdpi', `${iconPath}.png`), path.join(appPath, 'res', 'drawable-mdpi', `${iconPath}.png`), path.join(appPath, 'res', 'drawable-xhdpi', `${iconPath}.png`), path.join(appPath, 'res', 'drawable-xxhdpi', `${iconPath}.png`), path.join(appPath, 'res', 'mipmap-hdpi', `${iconPath}.png`), path.join(appPath, 'res', 'mipmap-mdpi', `${iconPath}.png`), path.join(appPath, 'res', 'mipmap-xhdpi', `${iconPath}.png`), path.join(appPath, 'res', 'mipmap-xxhdpi', `${iconPath}.png`)];
 
-    // 读取strings.xml获取应用名称
-    if (existsSync(stringsPath)) {
-      const stringsContent = await fs.readFile(stringsPath, 'utf-8');
-      const appNameMatch = stringsContent.match(/<string name="app_name">([^<]+)<\/string>/);
-      if (appNameMatch) {
-        appInfo.name = appNameMatch[1];
-      }
-    }
+  //       for (const iconFilePath of possibleIconPaths) {
+  //         if (existsSync(iconFilePath)) {
+  //           appInfo.icon = iconFilePath;
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   }
 
-    // 如果没有找到应用名称，使用目录名
-    if (!appInfo.name) {
-      appInfo.name = path.basename(appPath);
-    }
+  //   // 读取strings.xml获取应用名称
+  //   if (existsSync(stringsPath)) {
+  //     const stringsContent = await fs.readFile(stringsPath, 'utf-8');
+  //     const appNameMatch = stringsContent.match(/<string name="app_name">([^<]+)<\/string>/);
+  //     if (appNameMatch) {
+  //       appInfo.name = appNameMatch[1];
+  //     }
+  //   }
 
-    return appInfo;
-  } catch (error) {
-    console.error('Failed to read app info:', error);
-    return null;
-  }
+  //   // 如果没有找到应用名称，使用目录名
+  //   if (!appInfo.name) {
+  //     appInfo.name = path.basename(appPath);
+  //   }
+
+  //   return appInfo;
+  // } catch (error) {
+  //   console.error('Failed to read app info:', error);
+  //   return null;
+  // }
 });
 
 // 更新应用名称

@@ -36,6 +36,8 @@ export default function EditPack(): React.JSX.Element {
       if (directoryPath) {
         const info = await electron.ipcRenderer.invoke('read-app-info', directoryPath);
         if (info) {
+          console.log(999, info);
+          
           setAppInfo(info);
         } else {
           alert('无法读取应用信息，请确保选择的是有效的应用目录');
