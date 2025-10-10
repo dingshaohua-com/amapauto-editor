@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { parseString } from 'xml2js';
 
-const parseManifest = (path: string) => {
+const parseXml = (path: string) => {
   const manifestTxt = fs.readFileSync(path, 'utf8');
   return new Promise((resolve, reject) => {
     parseString(manifestTxt, (err, result) => {
@@ -13,4 +13,4 @@ const parseManifest = (path: string) => {
     });
   });
 };
-export default parseManifest;
+export default parseXml;

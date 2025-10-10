@@ -3,12 +3,13 @@ import fs from 'fs/promises';
 import { existsSync } from 'fs';
 import { ipcMain } from 'electron';
 import { spawn } from 'child_process';
+import parseXml from '../utils/parse-xml';
 import { runJava } from '../utils/run-java';
 import getSomeFile from '../utils/some-file.js';
-import parseManifest from '../utils/parse-manifest';
 import repairAutoAmap from '../utils/repair-res/auto-amap';
 import apktoolJar from '../../../resources/apktool.jar?asset';
 import oneCertJks from '../../../resources/jks/one-cert.jks?asset';
+import parseApp from '../utils/parse-app';
 
 const apksigner = getSomeFile('apksigner');
 
@@ -32,10 +33,7 @@ ipcMain.handle('build-apk', async (_, path: string) => {
 
 // 读取应用信息（从AndroidManifest.xml和其他文件）
 ipcMain.handle('read-app-info', async (_, appPath: string) => {
-  const manifestPath = path.join(appPath, 'AndroidManifest.xml');
-  const manifest = await parseManifest(manifestPath);
-  console.log(manifestPath);
-  return manifest;
+  return parseApp(appPath);
 
   // try {
   //   const manifestPath = path.join(appPath, 'AndroidManifest.xml');

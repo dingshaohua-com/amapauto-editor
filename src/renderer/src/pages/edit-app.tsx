@@ -10,12 +10,12 @@ import { ArrowLeft, Package, Folder, Edit2, Check, X } from 'lucide-react';
 interface AppInfo {
   path: string;
   name: string;
-  packageName: string;
+  package: string;
   icon: string | null;
 }
 
 interface EditingState {
-  field: 'name' | 'packageName' | null;
+  field: 'name' | 'package' | null;
   value: string;
 }
 
@@ -51,11 +51,11 @@ export default function EditPack(): React.JSX.Element {
     }
   };
 
-  const startEditing = (field: 'name' | 'packageName') => {
+  const startEditing = (field: 'name' | 'package') => {
     if (!appInfo) return;
     setEditing({
       field,
-      value: field === 'name' ? appInfo.name : appInfo.packageName,
+      value: field === 'name' ? appInfo.name : appInfo.package,
     });
   };
 
@@ -72,7 +72,7 @@ export default function EditPack(): React.JSX.Element {
 
       if (editing.field === 'name') {
         success = await electron.ipcRenderer.invoke('update-app-name', appInfo.path, editing.value);
-      } else if (editing.field === 'packageName') {
+      } else if (editing.field === 'package') {
         success = await electron.ipcRenderer.invoke('update-package-name', appInfo.path, editing.value);
       }
 
@@ -82,7 +82,7 @@ export default function EditPack(): React.JSX.Element {
           prev
             ? {
                 ...prev,
-                [editing.field === 'name' ? 'name' : 'packageName']: editing.value,
+                [editing.field === 'name' ? 'name' : 'package']: editing.value,
               }
             : null,
         );
@@ -112,7 +112,7 @@ export default function EditPack(): React.JSX.Element {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="h-screen">
       {/* 顶部导航栏 */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-6 py-4">
@@ -137,11 +137,11 @@ export default function EditPack(): React.JSX.Element {
         <div className="w-full max-w-2xl">
           {match(appInfo)
             .with(null, () => (
-              <div className="bg-white rounded-2xl shadow-xl p-8">
+              <>
                 <div className="text-center">
                   <Button onClick={selectAppDirectory} disabled={loading} size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 text-base font-medium shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                     <Folder className="w-5 h-5 mr-2" />
-                    {loading ? '读取中...' : '选择APP解包后的文件夹'}
+                    {loading ? '读取中...' : '选择APK解包目录'}
                   </Button>
                 </div>
 
@@ -151,13 +151,13 @@ export default function EditPack(): React.JSX.Element {
                     <li>• 编辑后的信息将直接保存到文件中</li>
                   </ul>
                 </div>
-              </div>
+              </>
             ))
             .otherwise(() => (
-              <div className="bg-white rounded-2xl shadow-xl p-8">
+              <>
                 <div className="space-y-6">
                   {/* 应用图标和基本信息 */}
-                  <div className="flex items-center gap-4 pb-6 border-b border-gray-200">
+                  {/* <div className="flex items-center gap-4 pb-6 border-b border-gray-200">
                     {match(appInfo.icon)
                       .with(null, () => (
                         <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
@@ -178,7 +178,7 @@ export default function EditPack(): React.JSX.Element {
                       <h2 className="text-xl font-semibold text-gray-900">{appInfo.name}</h2>
                       <p className="text-sm text-gray-500">{appInfo.path}</p>
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* 应用名称编辑 */}
                   <div className="space-y-3">
@@ -199,7 +199,7 @@ export default function EditPack(): React.JSX.Element {
                         .otherwise(() => (
                           <>
                             <div className="flex-1 px-3 py-2 bg-gray-50 rounded-md border border-gray-200">
-                              <span className="text-gray-900">{appInfo.name}</span>
+                              <span className="text-gray-900">{appInfo?.name}</span>
                             </div>
                             <Button onClick={() => startEditing('name')} disabled={loading || editing.field !== null} size="sm" variant="outline">
                               <Edit2 className="w-4 h-4" />
@@ -214,7 +214,7 @@ export default function EditPack(): React.JSX.Element {
                     <div className="flex items-center gap-3 h-10">
                       <label className="text-sm font-medium text-gray-700 w-20">包名</label>
                       {match(editing.field)
-                        .with('packageName', () => (
+                        .with('package', () => (
                           <>
                             <Combobox
                               options={appList}
@@ -247,9 +247,9 @@ export default function EditPack(): React.JSX.Element {
                         .otherwise(() => (
                           <>
                             <div className="flex-1 px-3 py-2 bg-gray-50 rounded-md border border-gray-200">
-                              <span className="text-gray-900 font-mono text-sm">{appInfo.packageName}</span>
+                              <span className="text-gray-900 font-mono text-sm">{appInfo?.package}</span>
                             </div>
-                            <Button onClick={() => startEditing('packageName')} disabled={loading || editing.field !== null} size="sm" variant="outline">
+                            <Button onClick={() => startEditing('package')} disabled={loading || editing.field !== null} size="sm" variant="outline">
                               <Edit2 className="w-4 h-4" />
                             </Button>
                           </>
@@ -258,13 +258,13 @@ export default function EditPack(): React.JSX.Element {
                   </div>
 
                   {/* 操作按钮 */}
-                  <div className="flex gap-3 pt-6 border-t border-gray-200">
+                  <div className="flex gap-3 pt-6">
                     <Button onClick={buildApk} className='cursor-pointer bg-green-600 hover:bg-green-700 text-white flex items-center m-auto'>
                       生成新APK
                     </Button>
                   </div>
                 </div>
-              </div>
+              </>
             ))}
         </div>
       </div>
