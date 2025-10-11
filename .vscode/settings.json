@@ -8,5 +8,5 @@
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "cSpell.userWords": ["apksigner","apktool", "Dfile","amap","tinnove"]
+  "cSpell.userWords": ["apksigner","apktool", "Dfile","amap","tinnove","Anims","autonavi"]
 }

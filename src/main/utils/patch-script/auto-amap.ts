@@ -1,22 +1,5 @@
-// apk-resource-repair.ts
 import fs from 'fs';
 import path from 'path';
-
-/**
- * 修复APK资源文件 - 注释掉不存在的anim资源引用
- * @param apkDir - APK解包目录路径
- */
-export function repairApkResources(apkDir: string): void {
-  console.log('开始修复APK资源文件...');
-
-  // 修复 anims.xml
-  fixAnimsXml(apkDir);
-
-  // 修复 public.xml
-  fixPublicXml(apkDir);
-
-  console.log('资源修复完成');
-}
 
 /**
  * 修复 anims.xml 文件 - 注释掉不存在的anim资源
@@ -100,5 +83,20 @@ function fixPublicXml(apkDir: string): void {
   }
 }
 
-const repairGaode = repairApkResources;
-export default repairGaode;
+/**
+ * 修复APK资源文件 - 注释掉不存在的anim资源引用
+ * @param apkDir - APK解包目录路径
+ */
+function patchAutoAmap(apkDir: string): void {
+  console.log('开始修复APK资源文件...');
+
+  // 修复 anims.xml
+  fixAnimsXml(apkDir);
+
+  // 修复 public.xml
+  fixPublicXml(apkDir);
+
+  console.log('资源修复完成');
+}
+
+export default patchAutoAmap;

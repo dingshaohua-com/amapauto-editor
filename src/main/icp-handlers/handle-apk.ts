@@ -1,8 +1,9 @@
 import path from 'path';
 import { ipcMain } from 'electron';
 import parseApp from '../utils/parse-app';
+import patchScript from '../utils/patch-script/index';
 import { runJava, runApkSigner } from '../utils/run-soft';
-import repairAutoAmap from '../utils/repair-res/auto-amap';
+import repairAutoAmap from '../utils/patch-script/auto-amap';
 import apktoolJar from '../../../resources/apktool.jar?asset';
 
 // 解包APK
@@ -32,4 +33,29 @@ ipcMain.handle('read-app-info', async (_, appPath: string) => {
 ipcMain.handle('sign-apk', async (_, filePath: string, serialType: string) => {
   const res = await runApkSigner({ filePath, serialType });
   return res;
+});
+
+// 获取patch脚本列表
+ipcMain.handle('patch-script', () => {
+  return patchScript;
+});
+
+// 执行patch脚本
+ipcMain.handle('execute-patch-script', async (_, scriptName: string, directoryPath: string) => {
+  try {
+    console.log(`执行patch脚本: ${scriptName}, 目录: ${directoryPath}`);
+
+    switch (scriptName) {
+      case 'patchAutoAmap':
+        repairAutoAmap(directoryPath);
+        break;
+      default:
+        throw new Error(`未知的patch脚本: ${scriptName}`);
+    }
+
+    return { success: true, message: 'patch脚本执行成功' };
+  } catch (error) {
+    console.error('执行patch脚本失败:', error);
+    return { success: false, message: (error as Error).message || 'patch脚本执行失败' };
+  }
 });
