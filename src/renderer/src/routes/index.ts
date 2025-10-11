@@ -11,6 +11,7 @@ const router = createBrowserRouter([
       { path: '/unpack-app', Component: lazy(() => import('@renderer/pages/unpack-app')) },
       { path: '/edit-app', Component: lazy(() => import('@renderer/pages/edit-app')) },
       { path: '/sign-app', Component: lazy(() => import('@renderer/pages/sign-app')) },
+      { path: '/patch-app', Component: lazy(() => import('@renderer/pages/patch-app')) },
     ]
   }
 ])

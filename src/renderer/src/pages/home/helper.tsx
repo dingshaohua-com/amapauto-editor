@@ -29,6 +29,14 @@ export const getMenuItems = (navigate) => {
       },
     },
     {
+      icon: <Zap className="w-6 h-6" />,
+      title: '性能优化',
+      description: '优化应用性能',
+      onClick: () => {
+        navigate('/patch-app');
+      },
+    },
+    {
       icon: <Smartphone className="w-6 h-6" />,
       title: 'APK 重打包',
       description: '重新生成 APK 文件',
@@ -43,12 +51,6 @@ export const getMenuItems = (navigate) => {
       onClick: () => console.log('资源管理'),
     },
 
-    {
-      icon: <Zap className="w-6 h-6" />,
-      title: '性能优化',
-      description: '优化应用性能',
-      onClick: () => console.log('性能优化'),
-    },
     {
       icon: <Database className="w-6 h-6" />,
       title: '数据库工具',

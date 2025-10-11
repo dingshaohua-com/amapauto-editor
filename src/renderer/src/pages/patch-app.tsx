@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { match } from 'ts-pattern';
+import { useRequest } from 'ahooks';
 import { useNavigate } from 'react-router';
-import { useState, useEffect } from 'react';
 import { Button } from '@renderer/components/ui/button';
 import { ArrowLeft, Folder, Play, CheckCircle, AlertCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@renderer/components/ui/dialog';
@@ -20,34 +21,17 @@ interface PatchState {
 
 export default function PatchApp(): React.JSX.Element {
   const [selectedDirectory, setSelectedDirectory] = useState<string>('');
-  const [patchScripts, setPatchScripts] = useState<PatchScript[]>([]);
   const [patchState, setPatchState] = useState<PatchState>({ type: 'idle' });
   const [showDialog, setShowDialog] = useState(false);
   const navigate = useNavigate();
 
-  // 获取patch脚本列表
-  useEffect(() => {
-    const loadPatchScripts = async () => {
-      try {
-        const scripts = await electron.ipcRenderer.invoke('patch-script');
-        setPatchScripts(scripts);
-      } catch (error) {
-        console.error('获取patch脚本列表失败:', error);
-      }
-    };
-    loadPatchScripts();
-  }, []);
+  // 获取可执行脚本列表
+  const { data: patchScripts = [] } = useRequest(() => electron.ipcRenderer.invoke('patch-script'));
 
   // 选择目录
   const selectDirectory = async () => {
-    try {
-      const directoryPath = await electron.ipcRenderer.invoke('select-dir');
-      if (directoryPath) {
-        setSelectedDirectory(directoryPath);
-      }
-    } catch (error) {
-      console.error('选择目录失败:', error);
-    }
+    const directoryPath = await electron.ipcRenderer.invoke('select-dir');
+    setSelectedDirectory(directoryPath);
   };
 
   // 执行patch脚本
@@ -57,20 +41,15 @@ export default function PatchApp(): React.JSX.Element {
       return;
     }
 
-    try {
-      setShowDialog(true);
-      setPatchState({ type: 'loading' });
+    setShowDialog(true);
+    setPatchState({ type: 'loading' });
 
-      const result = await electron.ipcRenderer.invoke('execute-patch-script', script.script, selectedDirectory);
+    const result = await electron.ipcRenderer.invoke('execute-patch-script', script.script, selectedDirectory);
 
-      if (result.success) {
-        setPatchState({ type: 'success', message: result.message });
-      } else {
-        setPatchState({ type: 'error', message: result.message });
-      }
-    } catch (error) {
-      console.error('执行patch脚本失败:', error);
-      setPatchState({ type: 'error', message: '执行patch脚本失败' });
+    if (result.success) {
+      setPatchState({ type: 'success', message: result.message });
+    } else {
+      setPatchState({ type: 'error', message: result.message });
     }
   };
 
@@ -82,7 +61,7 @@ export default function PatchApp(): React.JSX.Element {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="h-screen">
         {/* 顶部导航栏 */}
         <div className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
           <div className="flex items-center gap-4">
@@ -99,53 +78,36 @@ export default function PatchApp(): React.JSX.Element {
         <div className="p-8">
           <div className="max-w-4xl mx-auto">
             {/* 目录选择区域 */}
-            <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">选择接包目录</h2>
+            <div className="p-6 mb-8 border-b-2 border-violet-400">
               <div className="flex items-center gap-4">
                 <Button onClick={selectDirectory} variant="outline" className="flex-shrink-0">
                   <Folder className="w-4 h-4 mr-2" />
-                  选择目录
+                  选择APK目录
                 </Button>
-                {selectedDirectory && (
-                  <div className="flex-1 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <p className="text-sm text-blue-900 font-medium mb-1">已选择目录：</p>
-                    <p className="text-sm text-blue-800 font-mono break-all">{selectedDirectory}</p>
-                  </div>
-                )}
+                {selectedDirectory && <div className="flex-1 text-sm text-blue-900 font-medium mb-1">已选择目录：{selectedDirectory}</div>}
               </div>
-              {!selectedDirectory && <p className="text-sm text-gray-500 mt-2">* 可选择，不选择的情况下脚本执行按钮将被禁用</p>}
             </div>
 
             {/* 脚本列表区域 */}
-            <div className="bg-white rounded-2xl shadow-xl p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">可用的 Patch 脚本</h2>
-
-              {patchScripts.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">暂无可用的 patch 脚本</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {patchScripts.map((script, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-base font-medium text-gray-900">{script.label}</h3>
-                            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-md font-mono">{script.value}</span>
-                          </div>
-                          <p className="text-sm text-gray-600 mb-1">{script.desc}</p>
-                          {script.detail && script.detail !== 'xxx' && <p className="text-xs text-gray-500">{script.detail}</p>}
-                        </div>
-                        <Button onClick={() => executePatchScript(script)} disabled={!selectedDirectory} className="bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-300 disabled:text-gray-500">
-                          <Play className="w-4 h-4 mr-2" />
-                          执行
-                        </Button>
+            <div className="p-6">
+              {patchScripts.map((script, index) => (
+                <div key={index} className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-base font-medium text-gray-900">{script.label}</h3>
+                        <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-md font-mono">{script.value}</span>
                       </div>
+                      <p className="text-sm text-gray-600 mb-1">{script.desc}</p>
+                      {script.detail && script.detail !== 'xxx' && <p className="text-xs text-gray-500">{script.detail}</p>}
                     </div>
-                  ))}
+                    <Button onClick={() => executePatchScript(script)} disabled={!selectedDirectory} className="bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-300 disabled:text-gray-500">
+                      <Play className="w-4 h-4 mr-2" />
+                      执行
+                    </Button>
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
           </div>
         </div>
@@ -153,7 +115,7 @@ export default function PatchApp(): React.JSX.Element {
 
       {/* 执行状态对话框 */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-white">
           <DialogHeader>
             <DialogTitle>
               {match(patchState.type)
