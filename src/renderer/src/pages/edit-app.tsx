@@ -38,7 +38,7 @@ export default function EditPack(): React.JSX.Element {
         if (info) {
           console.log(999, info);
           
-          setAppInfo(info);
+          setAppInfo({...info, path: directoryPath});
         } else {
           alert('无法读取应用信息，请确保选择的是有效的应用目录');
         }

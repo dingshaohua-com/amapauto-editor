@@ -20,6 +20,8 @@ ipcMain.handle('unpack-apk', async (_, filePath: string) => {
 // 打包APK
 ipcMain.handle('build-apk', async (_, path: string) => {
   const params = ['-Dfile.encoding=UTF-8', '-jar', apktoolJar, 'b', path];
+  console.log('开始打包APK...', params);
+  
   const res = await runJava(params);
   return res;
 });
