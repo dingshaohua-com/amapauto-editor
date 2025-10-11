@@ -16,8 +16,8 @@ function fixAnimsXml(apkDir: string): void {
     let content = fs.readFileSync(animsPath, 'utf8');
     let commentedCount = 0;
 
-    // 注释掉不存在的anim资源
-    content = content.replace(/(\s*)(<item[^>]*type="anim"[^>]*>.*?<\/item>)/g, (match: string, indent: string, fullTag: string) => {
+    // 使用更安全的方法：先检查是否已经被注释，然后处理
+    content = content.replace(/^(\s*)(<item[^>]*type="anim"[^>]*>.*?<\/item>)$/gm, (match: string, indent: string, fullTag: string) => {
       // 提取资源名
       const nameMatch = fullTag.match(/name="([^"]*)"/);
       if (!nameMatch) return match;
@@ -32,6 +32,9 @@ function fixAnimsXml(apkDir: string): void {
 
       return match;
     });
+
+    // 避免重复注释：移除已经被多重注释的行
+    content = content.replace(/^(\s*)<!--\s*(<!--.*?-->)\s*-->$/gm, '$1$2');
 
     if (commentedCount > 0) {
       fs.writeFileSync(animsPath, content, 'utf8');
@@ -57,8 +60,8 @@ function fixPublicXml(apkDir: string): void {
     let content = fs.readFileSync(publicXmlPath, 'utf8');
     let commentedCount = 0;
 
-    // 注释掉不存在的anim引用
-    content = content.replace(/(\s*)(<public[^>]*type="anim"[^>]*\/>)/g, (match: string, indent: string, fullTag: string) => {
+    // 使用更安全的方法：先检查是否已经被注释，然后处理
+    content = content.replace(/^(\s*)(<public[^>]*type="anim"[^>]*\/?>)$/gm, (match: string, indent: string, fullTag: string) => {
       // 提取资源名
       const nameMatch = fullTag.match(/name="([^"]*)"/);
       if (!nameMatch) return match;
@@ -73,6 +76,9 @@ function fixPublicXml(apkDir: string): void {
 
       return match;
     });
+
+    // 避免重复注释：移除已经被多重注释的行
+    content = content.replace(/^(\s*)<!--\s*(<!--.*?-->)\s*-->$/gm, '$1$2');
 
     if (commentedCount > 0) {
       fs.writeFileSync(publicXmlPath, content, 'utf8');
