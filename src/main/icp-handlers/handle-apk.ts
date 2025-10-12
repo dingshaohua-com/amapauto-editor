@@ -5,6 +5,7 @@ import patchScript from '../utils/patch-script/index';
 import { runJava, runApkSigner } from '../utils/run-soft';
 import repairAutoAmap from '../utils/patch-script/auto-amap';
 import apktoolJar from '../../../resources/apktool.jar?asset';
+import { updateAppName, updatePackageName } from '../utils/update-app';
 
 // 解包APK
 ipcMain.handle('unpack-apk', async (_, filePath: string) => {
@@ -42,6 +43,18 @@ ipcMain.handle('read-app-info', async (_, appPath: string) => {
 ipcMain.handle('sign-apk', async (_, filePath: string, serialType: string) => {
   const res = await runApkSigner({ filePath, serialType });
   return res;
+});
+
+// 更新APK
+ipcMain.handle('update-app-info', async (_, filePath: string, values: Record<string, string>) => {
+  if (Object.keys(values).includes('name')) {
+    return await updateAppName(filePath, values.name);
+  } else if (Object.keys(values).includes('package')) {
+    return await updatePackageName(filePath, values.package);
+  }
+
+  // Return a default value when no matching condition is found
+  return { success: false, message: 'No valid update operation specified' };
 });
 
 // 获取patch脚本列表

@@ -37,8 +37,8 @@ export default function EditPack(): React.JSX.Element {
         const info = await electron.ipcRenderer.invoke('read-app-info', directoryPath);
         if (info) {
           console.log(999, info);
-          
-          setAppInfo({...info, path: directoryPath});
+
+          setAppInfo({ ...info, path: directoryPath });
         } else {
           alert('无法读取应用信息，请确保选择的是有效的应用目录');
         }
@@ -71,9 +71,9 @@ export default function EditPack(): React.JSX.Element {
       let success = false;
 
       if (editing.field === 'name') {
-        success = await electron.ipcRenderer.invoke('update-app-name', appInfo.path, editing.value);
+        success = await electron.ipcRenderer.invoke('update-app-info', appInfo.path, { name: editing.value });
       } else if (editing.field === 'package') {
-        success = await electron.ipcRenderer.invoke('update-package-name', appInfo.path, editing.value);
+        success = await electron.ipcRenderer.invoke('update-app-info', appInfo.path, { package: editing.value });
       }
 
       if (success) {
@@ -105,11 +105,10 @@ export default function EditPack(): React.JSX.Element {
     }
   };
 
-  const buildApk = async()=>{
-     await electron.ipcRenderer.invoke('build-apk', appInfo?.path);
-     console.log('打包完成');
-     
-  }
+  const buildApk = async () => {
+    await electron.ipcRenderer.invoke('build-apk', appInfo?.path);
+    console.log('打包完成');
+  };
 
   return (
     <div className="h-screen">
@@ -259,7 +258,7 @@ export default function EditPack(): React.JSX.Element {
 
                   {/* 操作按钮 */}
                   <div className="flex gap-3 pt-6">
-                    <Button onClick={buildApk} className='cursor-pointer bg-green-600 hover:bg-green-700 text-white flex items-center m-auto'>
+                    <Button onClick={buildApk} className="cursor-pointer bg-green-600 hover:bg-green-700 text-white flex items-center m-auto">
                       生成新APK
                     </Button>
                   </div>

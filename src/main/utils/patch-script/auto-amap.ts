@@ -90,6 +90,14 @@ function fixPublicXml(apkDir: string): void {
   }
 }
 
+
+/**
+ * 修复启动报错：应用出现异常错误
+ */
+function fixLaunchErr(apkDir: string): void {
+
+}
+
 /**
  * 修复APK资源文件 - 注释掉不存在的anim资源引用
  * @param apkDir - APK解包目录路径
@@ -103,6 +111,9 @@ function patchAutoAmap(apkDir: string) {
 
   // 修复 public.xml
   fixPublicXml(apkDir);
+
+  // fixLaunchErr
+  fixLaunchErr(apkDir);
 
   console.log('资源修复完成');
 }

@@ -4,14 +4,14 @@ import { useNavigate } from 'react-router';
 import loadingImg from '../assets/imgs/loading.gif';
 import Fireworks from '@renderer/components/fireworks';
 import { Button } from '@renderer/components/ui/button';
-import { Combobox } from '@renderer/components/ui/combobox';
+
 import { ArrowLeft, FileCheck, CheckCircle, AlertCircle, ExternalLink, RotateCcw, Folder } from 'lucide-react';
 
 type SignState = { type: 'idle' } | { type: 'file-selected'; filePath: string } | { type: 'loading' } | { type: 'success'; signedApkPath: string } | { type: 'error'; message: string };
 
 // 车型选项
 const carTypeOptions = [
-  { label: '梧桐系', value: 'wutong' },
+  { label: '梧桐系', value: 'tinnove' },
   { label: '飞鱼系', value: 'feiyu' },
   { label: 'G318', value: 'g318' },
   { label: 'A07', value: 'a07' },
@@ -174,7 +174,18 @@ export default function ReSign(): React.JSX.Element {
                   {/* 车型选择 */}
                   <div className="mb-6">
                     <label className="text-sm font-medium text-gray-700 mb-3 block">选择车型：</label>
-                    <Combobox options={carTypeOptions} value={carType} onValueChange={setCarType} placeholder="请选择车型..." searchPlaceholder="搜索车型..." className="w-full" emptyMessage="没有找到匹配的车型" />
+                    <select
+                      value={carType}
+                      onChange={(e) => setCarType(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">请选择车型...</option>
+                      {carTypeOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   {/* 操作按钮 */}
