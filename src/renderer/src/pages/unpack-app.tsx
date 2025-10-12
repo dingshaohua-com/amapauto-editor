@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router';
 import loadingImg from '../assets/imgs/loading.gif';
 import Fireworks from '@renderer/components/fireworks';
 import { Button } from '@renderer/components/ui/button';
-import { ArrowLeft, Package, CheckCircle, AlertCircle, ExternalLink, Sparkles, RotateCcw, Folder } from 'lucide-react';
+import { ArrowLeft, Package, CheckCircle, AlertCircle, ExternalLink, RotateCcw, Folder } from 'lucide-react';
 
 type UnpackState = { type: 'idle' } | { type: 'loading' } | { type: 'success'; unPackPath: string } | { type: 'error'; message: string };
 

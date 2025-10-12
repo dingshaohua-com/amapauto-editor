@@ -30,7 +30,7 @@ ipcMain.handle('select-dir', async () => {
 });
 
 // 打开目录
-ipcMain.handle('open-folder', async (event, folderPath: string) => {
+ipcMain.handle('open-folder', async (_, folderPath: string) => {
   try {
     await shell.openPath(folderPath);
     return true;
