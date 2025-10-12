@@ -115,7 +115,7 @@ export default function PatchApp(): React.JSX.Element {
 
       {/* 执行状态对话框 */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="sm:max-w-md bg-white">
+        <DialogContent className="sm:max-w-md bg-white" showCloseButton={false}>
           <DialogHeader>
             <DialogTitle>
               {match(patchState.type)

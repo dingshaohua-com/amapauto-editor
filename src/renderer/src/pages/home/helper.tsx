@@ -48,7 +48,9 @@ export const getMenuItems = (navigate) => {
       title: '重打包',
       description: '重新生成 APK 文件',
       variant: 'info' as const,
-      onClick: () => console.log('APK 重打包'),
+      onClick: () => {
+        navigate('/pack-app');
+      },
     },
 
     // {

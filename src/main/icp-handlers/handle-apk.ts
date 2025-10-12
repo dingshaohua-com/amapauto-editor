@@ -18,12 +18,19 @@ ipcMain.handle('unpack-apk', async (_, filePath: string) => {
 });
 
 // 打包APK
-ipcMain.handle('build-apk', async (_, path: string) => {
-  const params = ['-Dfile.encoding=UTF-8', '-jar', apktoolJar, 'b', path];
+ipcMain.handle('build-apk', async (_, inputPath: string) => {
+  const params = ['-Dfile.encoding=UTF-8', '-jar', apktoolJar, 'b', inputPath];
   console.log('开始打包APK...', params);
-  
-  const res = await runJava(params);
-  return res;
+
+  await runJava(params);
+
+  // 构建输出APK文件路径
+  // apktool 默认会在输入目录的 dist 子目录中生成 APK 文件
+  const { name: dirName } = path.parse(inputPath);
+  const outputApkPath = path.join(inputPath, 'dist', `${dirName}.apk`);
+
+  console.log('APK打包完成，输出路径:', outputApkPath);
+  return outputApkPath;
 });
 
 // 读取应用信息（从AndroidManifest.xml和其他文件）

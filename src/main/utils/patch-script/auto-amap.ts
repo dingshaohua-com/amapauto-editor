@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { sleepSync } from '../sleep';
 
 /**
  * 修复 anims.xml 文件 - 注释掉不存在的anim资源
@@ -93,8 +94,9 @@ function fixPublicXml(apkDir: string): void {
  * 修复APK资源文件 - 注释掉不存在的anim资源引用
  * @param apkDir - APK解包目录路径
  */
-function patchAutoAmap(apkDir: string): void {
+function patchAutoAmap(apkDir: string) {
   console.log('开始修复APK资源文件...');
+  sleepSync(2000);
 
   // 修复 anims.xml
   fixAnimsXml(apkDir);
