@@ -14,7 +14,6 @@ ipcMain.handle('unpack-apk', async (_, filePath: string) => {
   const unpackPath = path.join(fileDir, fileName); // 文件路径（目录）
   const params = ['-Dfile.encoding=UTF-8', '-jar', apktoolJar, 'd', '-k', filePath, '-f', '-o', unpackPath];
   await runJava(params);
-  repairAutoAmap(unpackPath);
   return unpackPath;
 });
 

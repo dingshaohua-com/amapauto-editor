@@ -149,8 +149,8 @@ function patchAutoAmap(apkDir: string) {
   // 修复 public.xml
   fixPublicXml(apkDir);
 
-  // fixLaunchErr
-  fixLaunchErr(apkDir);
+  // 修复启动报错
+  // fixLaunchErr(apkDir);
 
   console.log('资源修复完成');
 }

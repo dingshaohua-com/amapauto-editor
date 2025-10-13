@@ -34,22 +34,21 @@ export const getMenuItems = (navigate) => {
       },
     },
     {
-      icon: <img className="w-8 h-8" src={signAppImg} />,
-      title: '签名',
-      description: '为 APK 添加数字签名',
-      variant: 'warning' as const,
-      onClick: () => {
-        navigate('/sign-app');
-      },
-    },
-
-    {
       icon: <img className="w-7 h-7" src={packAppImg} />,
       title: '重打包',
       description: '重新生成 APK 文件',
       variant: 'info' as const,
       onClick: () => {
         navigate('/pack-app');
+      },
+    },
+    {
+      icon: <img className="w-8 h-8" src={signAppImg} />,
+      title: '签名',
+      description: '为 APK 添加数字签名',
+      variant: 'warning' as const,
+      onClick: () => {
+        navigate('/sign-app');
       },
     },
 
