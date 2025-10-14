@@ -4,22 +4,23 @@ import { existsSync } from 'fs';
 
 // 更新应用名称
 export const updateAppName = async (appPath: string, newName: string) => {
-  const stringsPath = path.join(appPath, 'res', 'values', 'strings.xml');
+  // 优先使用 values-zh 目录下的 strings.xml
+  const zhStringsPath = path.join(appPath, 'res', 'values-zh', 'strings.xml');
+  const defaultStringsPath = path.join(appPath, 'res', 'values', 'strings.xml');
+
+  let stringsPath = defaultStringsPath;
+
+  // 检查 values-zh 目录下的文件是否存在
+  if (existsSync(zhStringsPath)) {
+    stringsPath = zhStringsPath;
+  }
 
   if (existsSync(stringsPath)) {
     let stringsContent = await fs.readFile(stringsPath, 'utf-8');
 
     // 更新app_name
     const appNameRegex = /(<string name="app_name">)[^<]+(<\/string>)/;
-    if (appNameRegex.test(stringsContent)) {
-      stringsContent = stringsContent.replace(appNameRegex, `$1${newName}$2`);
-    } else {
-      // 如果没有app_name，添加一个
-      const resourcesMatch = stringsContent.match(/(<resources[^>]*>)/);
-      if (resourcesMatch) {
-        stringsContent = stringsContent.replace(resourcesMatch[1], `${resourcesMatch[1]}\n    <string name="app_name">${newName}</string>`);
-      }
-    }
+    stringsContent = stringsContent.replace(appNameRegex, `$1${newName}$2`);
 
     await fs.writeFile(stringsPath, stringsContent, 'utf-8');
     return true;
@@ -31,8 +32,6 @@ export const updateAppName = async (appPath: string, newName: string) => {
 // 更新包名
 export const updatePackageName = async (appPath: string, newPackageName: string) => {
   const manifestPath = path.join(appPath, 'AndroidManifest.xml');
-  console.log(111, manifestPath);
-  
 
   if (existsSync(manifestPath)) {
     let manifestContent = await fs.readFile(manifestPath, 'utf-8');

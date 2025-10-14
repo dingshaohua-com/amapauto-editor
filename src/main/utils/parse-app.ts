@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 import parseXml from './parse-xml';
 
 const handleAndroidManifest = async (appPath: string) => {
@@ -13,10 +14,24 @@ const handleAndroidManifest = async (appPath: string) => {
 };
 
 const handleStringsXml = async (appPath: string) => {
-  const stringsPath = path.join(appPath, 'res', 'values', 'strings.xml');
+  // 优先使用 values-zh 目录下的 strings.xml
+  const zhStringsPath = path.join(appPath, 'res', 'values-zh', 'strings.xml');
+  const defaultStringsPath = path.join(appPath, 'res', 'values', 'strings.xml');
+
+  let stringsPath = defaultStringsPath;
+
+  // 检查 values-zh 目录下的文件是否存在
+  try {
+    await fs.promises.access(zhStringsPath, fs.constants.F_OK);
+    stringsPath = zhStringsPath;
+  } catch (error) {
+    // values-zh 文件不存在，使用默认的 values 目录
+    console.log('values-zh/strings.xml not found, using values/strings.xml');
+  }
+
   const stringsJson: any = await parseXml(stringsPath);
   const res: any = {};
-  stringsJson.resources.string.forEach((item) => {
+  stringsJson.resources.string.forEach((item: any) => {
     res[item.$.name] = item._;
   });
 

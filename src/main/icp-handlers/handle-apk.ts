@@ -12,14 +12,14 @@ ipcMain.handle('unpack-apk', async (_, filePath: string) => {
   // 使用path.parse解析路径，从而获取文件名（不含后缀）
   const { name: fileName, dir: fileDir } = path.parse(filePath);
   const unpackPath = path.join(fileDir, fileName); // 文件路径（目录）
-  const params = ['-Dfile.encoding=UTF-8', '-jar', apktoolJar, 'd', '-k', filePath, '-f', '-o', unpackPath];
+  const params = ['-Dfile.encoding=UTF-8', '-jar', apktoolJar, 'd',  '-k', filePath, '-f', '-o', unpackPath];
   await runJava(params);
   return unpackPath;
 });
 
 // 打包APK
 ipcMain.handle('build-apk', async (_, inputPath: string) => {
-  const params = ['-Dfile.encoding=UTF-8', '-jar', apktoolJar, 'b', inputPath];
+  const params = ['-Dfile.encoding=UTF-8', '-jar', apktoolJar, 'b', '--use-aapt1', inputPath];
   console.log('开始打包APK...', params);
 
   await runJava(params);
