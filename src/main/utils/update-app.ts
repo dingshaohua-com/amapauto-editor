@@ -38,11 +38,27 @@ export const updatePackageName = async (appPath: string, newPackageName: string)
 
     // 更新package属性
     const packageRegex = /(package=")[^"]+(")/;
-    if (packageRegex.test(manifestContent)) {
-      manifestContent = manifestContent.replace(packageRegex, `$1${newPackageName}$2`);
-      await fs.writeFile(manifestPath, manifestContent, 'utf-8');
-      return true;
+    const [packageAttr] = packageRegex.exec(manifestContent)!;
+    const oldPackageName = packageAttr.split('"')[1];
+
+    // 高德地图特殊处理
+    if (oldPackageName === 'com.autonavi.amapauto') {
+      const permissionRegex = new RegExp(`\\b${'com.autonavi.amapautolite.provider'.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\.provider`, 'g');
+      manifestContent = manifestContent.replace(permissionRegex, `${newPackageName}.provider`);
     }
+
+    manifestContent = manifestContent.replace(packageRegex, `$1${newPackageName}$2`);
+
+    // 更新权限引用：将 oldPackageName.permission 替换为 newPackageName.permission
+    const permissionRegex = new RegExp(`\\b${oldPackageName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\.permission`, 'g');
+    manifestContent = manifestContent.replace(permissionRegex, `${newPackageName}.permission`);
+
+    // 更新provider的authorities属性：将 oldPackageName.xxx 替换为 newPackageName.xxx
+    const authoritiesRegex = new RegExp(`(android:authorities=["']?)${oldPackageName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\\.\\w+["']?)`, 'g');
+    manifestContent = manifestContent.replace(authoritiesRegex, `$1${newPackageName}$2`);
+
+    await fs.writeFile(manifestPath, manifestContent, 'utf-8');
+    return true;
   }
 
   return false;
